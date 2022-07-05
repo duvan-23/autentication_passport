@@ -48,7 +48,6 @@ passport.use('register', new PassportLocal.Strategy({
 
     // const usuario = usuarios.find(usuario => usuario.username == username);
     const usuario = await contenedorMongo.getByNombre(username);
-    console.log(usuario);
     if (usuario!="Nombre especificado no existe en el archivo") {
       return done('user already registered')
     }
@@ -58,13 +57,14 @@ passport.use('register', new PassportLocal.Strategy({
           console.error(err)
           return
         }
+        const contador=0;
         password=hash;
         const user = {
         username,
         password,
         direccion,
+        contador
         }
-        console.log(user);
         await contenedorMongo.insertarUsuarios(user);
 
         return done(null, user)
@@ -79,8 +79,6 @@ passport.use('login', new PassportLocal.Strategy(async(username, password, done)
     if (user=="Nombre especificado no existe en el archivo") {
       return done(null, false)
     }
-    console.log(password);
-    console.log(user.password);
     let respuesta;
     bcrypt.compare(password, user.password, (err, res) => {
         if (err) {
@@ -88,7 +86,6 @@ passport.use('login', new PassportLocal.Strategy(async(username, password, done)
           return
         }
         respuesta=res; //true or false
-        console.log(respuesta);
         if (!respuesta) {
             return done(null, false)
         }
@@ -118,8 +115,9 @@ app.use(
       resave: false,
       saveUninitialized: false,
       cookie: {
-          maxAge: 600000
+          maxAge: 600000,
       },
+      rolling: true,
   })
 )
 //---------------------------------------------------//
@@ -173,13 +171,13 @@ app.get('/failregister', (req, res) => {
     res.render('./views/register-error')
 })
 
-app.get('/', isAuth, (req, res) => {
+app.get('/', isAuth, async(req, res) => {
      if (!req.user.contador) {
         req.user.contador = 0
     }
-
-    req.user.contador++
-    console.log(`${req.user.username}, visitaste la pagina ${req.user.contador} veces`);
+    let contador =req.user.contador+1;
+    await contenedorMongo.putUsuarios(req.user.username,contador);
+    console.log(`${req.user.username}, visitaste la pagina ${contador} veces`);
     res.render('./views/mensajes',{nombre:req.user.username})
 })
 app.post('/', (req, res) => {

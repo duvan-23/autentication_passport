@@ -43,6 +43,10 @@ class ContenedorMongoDb{
         let nombre =this.nombre;
         return await actualizar(id,nombre,datos);
     }
+    async putUsuarios(name,datos){
+        let nombre =this.nombre;
+        return await actualizarUsuarios(name,nombre,datos);
+    }
     async insertarUsuarios(data){
         let nombre =this.nombre;
         return await guardarUsuarios(nombre,data);
@@ -62,6 +66,17 @@ async function guardarUsuarios(ruta,data){
     // return console.log(err);
     return resultado;
 }  
+async function actualizarUsuarios(name,nombre,datos){
+    let resultado2,r3;
+    try{
+        const contenido =await models2.usuarios.updateOne({username:name},{$set: {contador:datos}});
+        resultado2 =contenido;
+    }
+    catch(err){
+        resultado2= err;
+    }
+    return console.log(resultado2);
+}
 async function actualizar(id,nombre,datos){
     let resultado2,r3;
     try{
